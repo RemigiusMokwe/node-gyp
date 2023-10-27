@@ -68,7 +68,7 @@ if (dir) {
   }
 }
 
-function run () {
+async function run () {
   const command = prog.todo.shift()
   if (!command) {
     // done!
@@ -77,35 +77,36 @@ function run () {
     return
   }
 
-  prog.commands[command.name](command.args, function (err) {
-    if (err) {
-      log.error(command.name + ' error')
-      log.error('stack', err.stack)
-      errorMessage()
-      log.error('not ok')
-      return process.exit(1)
-    }
-    if (command.name === 'list') {
-      const versions = arguments[1]
-      if (versions.length > 0) {
-        versions.forEach(function (version) {
-          console.log(version)
-        })
-      } else {
-        console.log('No node development files installed. Use `node-gyp install` to install a version.')
-      }
-    } else if (arguments.length >= 2) {
-      console.log.apply(console, [].slice.call(arguments, 1))
-    }
+  try {
+    await prog.commands[command.name](command.args)
+  } catch (err) {
+    log.error(command.name + ' error')
+    log.error('stack', err.stack)
+    errorMessage()
+    log.error('not ok')
+    return process.exit(1)
+  }
 
-    // now run the next command in the queue
-    process.nextTick(run)
-  })
+  if (command.name === 'list') {
+    const versions = arguments[1]
+    if (versions.length > 0) {
+      versions.forEach(function (version) {
+        console.log(version)
+      })
+    } else {
+      console.log('No node development files installed. Use `node-gyp install` to install a version.')
+    }
+  } else if (arguments.length >= 2) {
+    console.log.apply(console, [].slice.call(arguments, 1))
+  }
+
+  // now run the next command in the queue
+  return run()
 }
 
 process.on('exit', function (code) {
   if (!completed && !code) {
-    log.error('Completion callback never invoked!')
+    log.error('Command callback never invoked!')
     issueMessage()
     process.exit(6)
   }
