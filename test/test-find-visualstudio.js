@@ -4,34 +4,25 @@ const { describe, it } = require('mocha')
 const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
-const { test: { VisualStudioFinder } } = require('../lib/find-visualstudio')
+const VisualStudioFinder = require('../lib/find-visualstudio')
+const { poison } = require('./common')
 
 const semverV1 = { major: 1, minor: 0, patch: 0 }
 
 delete process.env.VCINSTALLDIR
 
-function poison (object, property) {
-  function fail () {
-    console.error(Error(`Property ${property} should not have been accessed.`))
-    process.abort()
+class TestVisualStudioFinder extends VisualStudioFinder {
+  constructor (...args) {
+    super(...args)
+    delete this.env.NODE_GYP_FORCE_PYTHON
   }
-  const descriptor = {
-    configurable: false,
-    enumerable: false,
-    get: fail,
-    set: fail
-  }
-  Object.defineProperty(object, property, descriptor)
-}
 
-function TestVisualStudioFinder () { VisualStudioFinder.apply(this, arguments) }
-TestVisualStudioFinder.prototype = Object.create(VisualStudioFinder.prototype)
-
-const findVisualStudio = async (finder) => {
-  try {
-    return { err: null, info: await finder.findVisualStudio() }
-  } catch (err) {
-    return { err, info: null }
+  async findVisualStudio () {
+    try {
+      return { err: null, info: await super.findVisualStudio() }
+    } catch (err) {
+      return { err, info: null }
+    }
   }
 }
 
@@ -62,7 +53,7 @@ describe('find-visualstudio', function () {
       throw new Error()
     }
 
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: 'C:\\MSBuild12\\MSBuild.exe',
@@ -102,7 +93,7 @@ describe('find-visualstudio', function () {
       throw new Error()
     }
 
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.ok(/find .* Visual Studio/i.test(err), 'expect error')
     assert.ok(!info, 'no data')
   })
@@ -129,7 +120,7 @@ describe('find-visualstudio', function () {
       }
       throw new Error()
     }
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: 'C:\\MSBuild14\\MSBuild.exe',
@@ -228,7 +219,7 @@ describe('find-visualstudio', function () {
       const data = fs.readFileSync(file)
       return finder.parseData(null, data, '')
     }
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\' +
@@ -254,7 +245,7 @@ describe('find-visualstudio', function () {
       const data = fs.readFileSync(file)
       return finder.parseData(null, data, '')
     }
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\' +
@@ -279,7 +270,7 @@ describe('find-visualstudio', function () {
       const data = fs.readFileSync(file)
       return finder.parseData(null, data, '')
     }
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\' +
@@ -305,7 +296,7 @@ describe('find-visualstudio', function () {
       const data = fs.readFileSync(file)
       return finder.parseData(null, data, '')
     }
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\' +
@@ -331,7 +322,7 @@ describe('find-visualstudio', function () {
       const data = fs.readFileSync(file)
       return finder.parseData(null, data, '')
     }
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\' +
@@ -357,7 +348,7 @@ describe('find-visualstudio', function () {
       const data = fs.readFileSync(file)
       return finder.parseData(null, data, '')
     }
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\' +
@@ -392,7 +383,7 @@ describe('find-visualstudio', function () {
       const data = fs.readFileSync(file)
       return finder.parseData(null, data, '')
     }
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info, {
       msBuild: msBuildPath,
@@ -456,7 +447,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, 'AABB')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.ok(/find .* Visual Studio/i.test(err), 'expect error')
     assert.ok(!info, 'no data')
   })
@@ -465,7 +456,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, '2013')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.versionYear, 2013)
   })
@@ -474,7 +465,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, 'C:\\VS2013')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.path, 'C:\\VS2013')
   })
@@ -483,7 +474,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, '2015')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.versionYear, 2015)
   })
@@ -492,7 +483,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, 'C:\\VS2015')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.path, 'C:\\VS2015')
   })
@@ -501,7 +492,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, '2017')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.versionYear, 2017)
   })
@@ -511,7 +502,7 @@ describe('find-visualstudio', function () {
       'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.path,
       'C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community')
@@ -521,7 +512,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, '2019')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.versionYear, 2019)
   })
@@ -531,7 +522,7 @@ describe('find-visualstudio', function () {
       'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.path,
       'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools')
@@ -545,7 +536,7 @@ describe('find-visualstudio', function () {
     }
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.versionYear, 2022)
   })
@@ -555,7 +546,7 @@ describe('find-visualstudio', function () {
       'c:\\program files (x86)\\microsoft visual studio\\2019\\BUILDTOOLS')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.path,
       'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools')
@@ -569,7 +560,7 @@ describe('find-visualstudio', function () {
     }
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.versionYear, 2022)
   })
@@ -582,7 +573,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, null)
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.path, 'C:\\VS2015')
   })
@@ -594,7 +585,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, null)
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.path,
       'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools')
@@ -607,7 +598,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, null)
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.ok(/find .* Visual Studio/i.test(err), 'expect error')
     assert.ok(!info, 'no data')
   })
@@ -618,7 +609,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, 'C:\\VS2015')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.strictEqual(err, null)
     assert.deepStrictEqual(info.path, 'C:\\VS2015')
   })
@@ -630,7 +621,7 @@ describe('find-visualstudio', function () {
     const finder = new TestVisualStudioFinder(semverV1, 'C:\\VS2015')
 
     allVsVersions(finder)
-    const { err, info } = await findVisualStudio(finder)
+    const { err, info } = await finder.findVisualStudio()
     assert.ok(/find .* Visual Studio/i.test(err), 'expect error')
     assert.ok(!info, 'no data')
   })
