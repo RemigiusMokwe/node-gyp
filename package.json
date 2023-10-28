@@ -40,6 +40,7 @@
     "bindings": "^1.5.0",
     "mocha": "^10.2.0",
     "nan": "^2.18.0",
+    "prettier": "^3.0.3",
     "require-inject": "^1.4.4",
     "standard": "^17.1.0"
   },

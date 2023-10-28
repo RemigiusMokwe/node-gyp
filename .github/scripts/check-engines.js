@@ -10,7 +10,9 @@ const run = async (path, useEngines) => {
 
   const arb = new Arborist({ path })
   const tree = await arb.loadActual({ forceActual: true })
-  const deps = await tree.querySelectorAll(`#${pkg.name} > .prod:attr(engines, [node])`)
+  const deps = await tree.querySelectorAll(
+    `#${pkg.name} > .prod:attr(engines, [node])`,
+  )
 
   const invalid = []
   for (const dep of deps) {
@@ -19,23 +21,31 @@ const run = async (path, useEngines) => {
       invalid.push({
         name: `${dep.name}@${dep.version}`,
         location: dep.location,
-        engines: depEngines
+        engines: depEngines,
       })
     }
   }
 
   if (invalid.length) {
-    const msg = 'The following production dependencies are not compatible with ' +
-`\`engines.node: ${engines}\` found in \`${pkgPath}\`:\n` + invalid.map((dep) => [
-  `${dep.name}:`,
-  `  engines.node: ${dep.engines}`,
-  `  location: ${dep.location}`
-    ].join('\n')).join('\n')
+    const msg =
+      'The following production dependencies are not compatible with ' +
+      `\`engines.node: ${engines}\` found in \`${pkgPath}\`:\n` +
+      invalid
+        .map((dep) =>
+          [
+            `${dep.name}:`,
+            `  engines.node: ${dep.engines}`,
+            `  location: ${dep.location}`,
+          ].join('\n'),
+        )
+        .join('\n')
     throw new Error(msg)
   }
 }
 
-run(process.cwd(), ...process.argv.slice(2)).then(() => console.log('Success')).catch((err) => {
-  console.error(err)
-  process.exitCode = 1
-})
+run(process.cwd(), ...process.argv.slice(2))
+  .then(() => console.log('Success'))
+  .catch((err) => {
+    console.error(err)
+    process.exitCode = 1
+  })

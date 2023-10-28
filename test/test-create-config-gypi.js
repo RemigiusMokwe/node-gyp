@@ -39,7 +39,11 @@ describe('create-config-gypi', function () {
     const prog = gyp()
     prog.parseArgv(['_', '_', `--nodedir=${nodeDir}`])
 
-    const config = await getCurrentConfigGypi({ gyp: prog, nodeDir, vsInfo: {} })
+    const config = await getCurrentConfigGypi({
+      gyp: prog,
+      nodeDir,
+      vsInfo: {},
+    })
     assert.strictEqual(config.variables.build_with_electron, true)
   })
 
@@ -49,7 +53,11 @@ describe('create-config-gypi', function () {
     const prog = gyp()
     prog.parseArgv(['_', '_', '--force-process-config', `--nodedir=${nodeDir}`])
 
-    const config = await getCurrentConfigGypi({ gyp: prog, nodeDir, vsInfo: {} })
+    const config = await getCurrentConfigGypi({
+      gyp: prog,
+      nodeDir,
+      vsInfo: {},
+    })
     assert.strictEqual(config.variables.build_with_electron, undefined)
   })
 

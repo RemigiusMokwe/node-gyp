@@ -1,7 +1,7 @@
 const Mocha = require('mocha')
 
 class Reporter {
-  constructor (runner) {
+  constructor(runner) {
     this.failedTests = []
 
     runner.on(Mocha.Runner.constants.EVENT_RUN_BEGIN, () => {
@@ -15,7 +15,9 @@ class Reporter {
       console.log('* TESTS REPORT *')
       console.log('****************')
       console.log()
-      console.log(`Executed ${runner.stats.suites} suites with ${runner.stats.tests} tests in ${runner.stats.duration} ms`)
+      console.log(
+        `Executed ${runner.stats.suites} suites with ${runner.stats.tests} tests in ${runner.stats.duration} ms`,
+      )
       console.log(`  Passed: ${runner.stats.passes}`)
       console.log(`  Skipped: ${runner.stats.pending}`)
       console.log(`  Failed: ${runner.stats.failures}`)
@@ -63,7 +65,9 @@ class Reporter {
 
     runner.on(Mocha.Runner.constants.EVENT_TEST_FAIL, (test, error) => {
       this.failedTests.push({ test, error })
-      console.log(`Test '${test.title}' failed in ${test.duration} ms with ${error}`)
+      console.log(
+        `Test '${test.title}' failed in ${test.duration} ms with ${error}`,
+      )
     })
 
     runner.on(Mocha.Runner.constants.EVENT_TEST_END, (test) => {

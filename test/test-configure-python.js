@@ -14,16 +14,20 @@ const configure = requireInject('../lib/configure', {
     promises: {
       stat: async () => ({}),
       mkdir: async () => {},
-      writeFile: async () => {}
-    }
-  }
+      writeFile: async () => {},
+    },
+  },
 })
 
 log.logger.stream = null
 
 const EXPECTED_PYPATH = path.join(__dirname, '..', 'gyp', 'pylib')
 const SEPARATOR = process.platform === 'win32' ? ';' : ':'
-const SPAWN_RESULT = cb => ({ on: function () { cb() } })
+const SPAWN_RESULT = (cb) => ({
+  on: function () {
+    cb()
+  },
+})
 
 describe('configure-python', function () {
   it('configure PYTHONPATH with no existing env', function (done) {
@@ -46,7 +50,10 @@ describe('configure-python', function () {
     const prog = gyp()
     prog.parseArgv([])
     prog.spawn = function () {
-      assert.strictEqual(process.env.PYTHONPATH, [EXPECTED_PYPATH, existingPath].join(SEPARATOR))
+      assert.strictEqual(
+        process.env.PYTHONPATH,
+        [EXPECTED_PYPATH, existingPath].join(SEPARATOR),
+      )
 
       const dirs = process.env.PYTHONPATH.split(SEPARATOR)
       assert.deepStrictEqual(dirs, [EXPECTED_PYPATH, existingPath])
@@ -66,7 +73,10 @@ describe('configure-python', function () {
     const prog = gyp()
     prog.parseArgv([])
     prog.spawn = function () {
-      assert.strictEqual(process.env.PYTHONPATH, [EXPECTED_PYPATH, existingPath].join(SEPARATOR))
+      assert.strictEqual(
+        process.env.PYTHONPATH,
+        [EXPECTED_PYPATH, existingPath].join(SEPARATOR),
+      )
 
       const dirs = process.env.PYTHONPATH.split(SEPARATOR)
       assert.deepStrictEqual(dirs, [EXPECTED_PYPATH, pythonDir1, pythonDir2])

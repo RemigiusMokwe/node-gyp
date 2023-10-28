@@ -18,7 +18,10 @@ log.logger.stream = null
 describe('download', function () {
   it('download over http', async function () {
     const server = http.createServer((req, res) => {
-      assert.strictEqual(req.headers['user-agent'], `node-gyp v42 (node ${process.version})`)
+      assert.strictEqual(
+        req.headers['user-agent'],
+        `node-gyp v42 (node ${process.version})`,
+      )
       res.end('ok')
     })
 
@@ -29,7 +32,7 @@ describe('download', function () {
     const { port } = server.address()
     const gyp = {
       opts: {},
-      version: '42'
+      version: '42',
     }
     const url = `http://${host}:${port}`
     const res = await install.test.download(gyp, url)
@@ -48,7 +51,10 @@ describe('download', function () {
 
     const options = { ca, cert, key }
     const server = https.createServer(options, (req, res) => {
-      assert.strictEqual(req.headers['user-agent'], `node-gyp v42 (node ${process.version})`)
+      assert.strictEqual(
+        req.headers['user-agent'],
+        `node-gyp v42 (node ${process.version})`,
+      )
       res.end('ok')
     })
 
@@ -57,14 +63,16 @@ describe('download', function () {
       await fs.unlink(cafile)
     })
 
-    server.on('clientError', (err) => { throw err })
+    server.on('clientError', (err) => {
+      throw err
+    })
 
     const host = 'localhost'
     await new Promise((resolve) => server.listen(0, host, resolve))
     const { port } = server.address()
     const gyp = {
       opts: { cafile },
-      version: '42'
+      version: '42',
     }
     const url = `https://${host}:${port}`
     const res = await install.test.download(gyp, url)
@@ -77,14 +85,19 @@ describe('download', function () {
     })
 
     const pserver = http.createServer((req, res) => {
-      assert.strictEqual(req.headers['user-agent'], `node-gyp v42 (node ${process.version})`)
+      assert.strictEqual(
+        req.headers['user-agent'],
+        `node-gyp v42 (node ${process.version})`,
+      )
       res.end('proxy ok')
     })
 
-    after(() => Promise.all([
-      new Promise((resolve) => server.close(resolve)),
-      new Promise((resolve) => pserver.close(resolve))
-    ]))
+    after(() =>
+      Promise.all([
+        new Promise((resolve) => server.close(resolve)),
+        new Promise((resolve) => pserver.close(resolve)),
+      ]),
+    )
 
     const host = 'localhost'
     await new Promise((resolve) => server.listen(0, host, resolve))
@@ -93,9 +106,9 @@ describe('download', function () {
     const gyp = {
       opts: {
         proxy: `http://${host}:${port + 1}`,
-        noproxy: 'bad'
+        noproxy: 'bad',
       },
-      version: '42'
+      version: '42',
     }
     const url = `http://${host}:${port}`
     const res = await install.test.download(gyp, url)
@@ -104,7 +117,10 @@ describe('download', function () {
 
   it('download over http with noproxy', async function () {
     const server = http.createServer((req, res) => {
-      assert.strictEqual(req.headers['user-agent'], `node-gyp v42 (node ${process.version})`)
+      assert.strictEqual(
+        req.headers['user-agent'],
+        `node-gyp v42 (node ${process.version})`,
+      )
       res.end('ok')
     })
 
@@ -112,10 +128,12 @@ describe('download', function () {
       res.end('proxy ok')
     })
 
-    after(() => Promise.all([
-      new Promise((resolve) => server.close(resolve)),
-      new Promise((resolve) => pserver.close(resolve))
-    ]))
+    after(() =>
+      Promise.all([
+        new Promise((resolve) => server.close(resolve)),
+        new Promise((resolve) => pserver.close(resolve)),
+      ]),
+    )
 
     const host = 'localhost'
     await new Promise((resolve) => server.listen(0, host, resolve))
@@ -124,9 +142,9 @@ describe('download', function () {
     const gyp = {
       opts: {
         proxy: `http://${host}:${port + 1}`,
-        noproxy: host
+        noproxy: host,
       },
-      version: '42'
+      version: '42',
     }
     const url = `http://${host}:${port}`
     const res = await install.test.download(gyp, url)
@@ -135,7 +153,7 @@ describe('download', function () {
 
   it('download with missing cafile', async function () {
     const gyp = {
-      opts: { cafile: 'no.such.file' }
+      opts: { cafile: 'no.such.file' },
     }
     try {
       await install.test.download(gyp, {}, 'http://bad/')
@@ -151,7 +169,9 @@ describe('download', function () {
     after(async () => {
       await fs.unlink(cafile)
     })
-    const cas = await install.test.readCAFile(path.join(__dirname, 'fixtures/ca-bundle.crt'))
+    const cas = await install.test.readCAFile(
+      path.join(__dirname, 'fixtures/ca-bundle.crt'),
+    )
     assert.strictEqual(cas.length, 2)
     assert.notStrictEqual(cas[0], cas[1])
   })
@@ -159,11 +179,15 @@ describe('download', function () {
   // only run this test if we are running a version of Node with predictable version path behavior
 
   it('download headers (actual)', async function () {
-    if (process.env.FAST_TEST ||
-        process.release.name !== 'node' ||
-        semver.prerelease(process.version) !== null ||
-        semver.satisfies(process.version, '<10')) {
-      return this.skip('Skipping actual download of headers due to test environment configuration')
+    if (
+      process.env.FAST_TEST ||
+      process.release.name !== 'node' ||
+      semver.prerelease(process.version) !== null ||
+      semver.satisfies(process.version, '<10')
+    ) {
+      return this.skip(
+        'Skipping actual download of headers due to test environment configuration',
+      )
     }
 
     this.timeout(300000)
@@ -177,7 +201,10 @@ describe('download', function () {
     log.level = 'warn'
     await install(prog, [])
 
-    const data = await fs.readFile(path.join(expectedDir, 'installVersion'), 'utf8')
+    const data = await fs.readFile(
+      path.join(expectedDir, 'installVersion'),
+      'utf8',
+    )
     assert.strictEqual(data, '11\n', 'correct installVersion')
 
     const list = await fs.readdir(path.join(expectedDir, 'include/node'))
@@ -192,14 +219,21 @@ describe('download', function () {
     assert.ok(list.includes('v8.h'))
     assert.ok(list.includes('zlib.h'))
 
-    const lines = (await fs.readFile(path.join(expectedDir, 'include/node/node_version.h'), 'utf8')).split('\n')
+    const lines = (
+      await fs.readFile(
+        path.join(expectedDir, 'include/node/node_version.h'),
+        'utf8',
+      )
+    ).split('\n')
 
     // extract the 3 version parts from the defines to build a valid version string and
     // and check them against our current env version
     const version = ['major', 'minor', 'patch'].reduce((version, type) => {
       const re = new RegExp(`^#define\\sNODE_${type.toUpperCase()}_VERSION`)
       const line = lines.find((l) => re.test(l))
-      const i = line ? parseInt(line.replace(/^[^0-9]+([0-9]+).*$/, '$1'), 10) : 'ERROR'
+      const i = line
+        ? parseInt(line.replace(/^[^0-9]+([0-9]+).*$/, '$1'), 10)
+        : 'ERROR'
       return `${version}${type !== 'major' ? '.' : 'v'}${i}`
     }, '')
 

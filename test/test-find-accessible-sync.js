@@ -6,16 +6,22 @@ const path = require('path')
 const requireInject = require('require-inject')
 const configure = requireInject('../lib/configure', {
   'graceful-fs': {
-    closeSync: function () { return undefined },
+    closeSync: function () {
+      return undefined
+    },
     openSync: function (path) {
-      if (readableFiles.some(function (f) { return f === path })) {
+      if (
+        readableFiles.some(function (f) {
+          return f === path
+        })
+      ) {
         return 0
       } else {
         const error = new Error('ENOENT - not found')
         throw error
       }
-    }
-  }
+    },
+  },
 })
 
 const dir = path.sep + 'testdir'
@@ -25,7 +31,7 @@ const readableFileInDir = 'somedir' + path.sep + readableFile
 const readableFiles = [
   path.resolve(dir, readableFile),
   path.resolve(dir, anotherReadableFile),
-  path.resolve(dir, readableFileInDir)
+  path.resolve(dir, readableFileInDir),
 ]
 
 describe('find-accessible-sync', function () {

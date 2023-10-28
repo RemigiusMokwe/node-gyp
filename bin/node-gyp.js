@@ -26,8 +26,9 @@ if (prog.devDir) {
 } else {
   throw new Error(
     "node-gyp requires that the user's home directory is specified " +
-    'in either of the environmental variables HOME or USERPROFILE. ' +
-    'Overide with: --devdir /path/to/.node-gyp')
+      'in either of the environmental variables HOME or USERPROFILE. ' +
+      'Overide with: --devdir /path/to/.node-gyp',
+  )
 }
 
 if (prog.todo.length === 0) {
@@ -42,7 +43,13 @@ if (prog.todo.length === 0) {
 log.info('it worked if it ends with', 'ok')
 log.verbose('cli', process.argv)
 log.info('using', 'node-gyp@%s', prog.version)
-log.info('using', 'node@%s | %s | %s', process.versions.node, process.platform, process.arch)
+log.info(
+  'using',
+  'node@%s | %s | %s',
+  process.versions.node,
+  process.platform,
+  process.arch,
+)
 
 /**
  * Change dir if -C/--directory was passed.
@@ -68,7 +75,7 @@ if (dir) {
   }
 }
 
-async function run () {
+async function run() {
   const command = prog.todo.shift()
   if (!command) {
     // done!
@@ -94,7 +101,9 @@ async function run () {
         console.log(version)
       })
     } else {
-      console.log('No node development files installed. Use `node-gyp install` to install a version.')
+      console.log(
+        'No node development files installed. Use `node-gyp install` to install a version.',
+      )
     }
   } else if (arguments.length >= 2) {
     console.log.apply(console, [].slice.call(arguments, 1))
@@ -119,22 +128,25 @@ process.on('uncaughtException', function (err) {
   process.exit(7)
 })
 
-function errorMessage () {
+function errorMessage() {
   // copied from npm's lib/utils/error-handler.js
   const os = require('os')
   log.error('System', os.type() + ' ' + os.release())
-  log.error('command', process.argv
-    .map(JSON.stringify).join(' '))
+  log.error('command', process.argv.map(JSON.stringify).join(' '))
   log.error('cwd', process.cwd())
   log.error('node -v', process.version)
   log.error('node-gyp -v', 'v' + prog.package.version)
 }
 
-function issueMessage () {
+function issueMessage() {
   errorMessage()
-  log.error('', ['Node-gyp failed to build your package.',
-    'Try to update npm and/or node-gyp and if it does not help file an issue with the package author.'
-  ].join('\n'))
+  log.error(
+    '',
+    [
+      'Node-gyp failed to build your package.',
+      'Try to update npm and/or node-gyp and if it does not help file an issue with the package author.',
+    ].join('\n'),
+  )
 }
 
 // start running the given commands!

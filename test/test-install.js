@@ -11,7 +11,8 @@ const { pipeline: streamPipeline } = require('stream/promises')
 const requireInject = require('require-inject')
 const gyp = require('../lib/node-gyp')
 
-const createInstall = (mocks = {}) => requireInject('../lib/install', mocks).test
+const createInstall = (mocks = {}) =>
+  requireInject('../lib/install', mocks).test
 const { download, install } = createInstall()
 
 describe('install', function () {
@@ -20,24 +21,24 @@ describe('install', function () {
     const mockInstall = createInstall({
       'graceful-fs': {
         promises: {
-          stat (_) {
+          stat(_) {
             const err = new Error()
             err.code = 'EACCES'
             statCalled++
             throw err
-          }
-        }
-      }
+          },
+        },
+      },
     })
     const Gyp = {
       devDir: __dirname,
       opts: {
-        ensure: true
+        ensure: true,
       },
       commands: {
         install: (...args) => mockInstall.install(Gyp, ...args),
-        remove: async () => {}
-      }
+        remove: async () => {},
+      },
     }
 
     let err
@@ -55,14 +56,17 @@ describe('install', function () {
   })
 
   // only run these tests if we are running a version of Node with predictable version path behavior
-  const skipParallelInstallTests = process.env.FAST_TEST ||
+  const skipParallelInstallTests =
+    process.env.FAST_TEST ||
     process.release.name !== 'node' ||
     semver.prerelease(process.version) !== null ||
     semver.satisfies(process.version, '<10')
 
-  async function parallelInstallsTest (test, devDir, prog) {
+  async function parallelInstallsTest(test, devDir, prog) {
     if (skipParallelInstallTests) {
-      return test.skip('Skipping parallel installs test due to test environment configuration')
+      return test.skip(
+        'Skipping parallel installs test due to test environment configuration',
+      )
     }
 
     after(async () => {
@@ -82,7 +86,7 @@ describe('install', function () {
       install(prog, []),
       install(prog, []),
       install(prog, []),
-      install(prog, [])
+      install(prog, []),
     ])
   }
 
@@ -123,8 +127,13 @@ describe('install', function () {
     prog.opts.tarball = path.join(devDir, 'node-headers.tar.gz')
 
     await streamPipeline(
-      (await download(prog, `https://nodejs.org/dist/${process.version}/node-${process.version}.tar.gz`)).body,
-      createWriteStream(prog.opts.tarball)
+      (
+        await download(
+          prog,
+          `https://nodejs.org/dist/${process.version}/node-${process.version}.tar.gz`,
+        )
+      ).body,
+      createWriteStream(prog.opts.tarball),
     )
 
     await parallelInstallsTest(this, devDir, prog)

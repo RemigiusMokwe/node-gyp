@@ -9,12 +9,12 @@ const { execFile } = require('../lib/util')
 const { poison } = require('./common')
 
 class TestPythonFinder extends PythonFinder {
-  constructor (...args) {
+  constructor(...args) {
     super(...args)
     delete this.env.NODE_GYP_FORCE_PYTHON
   }
 
-  async findPython () {
+  async findPython() {
     try {
       return { err: null, python: await super.findPython() }
     } catch (err) {
@@ -26,7 +26,9 @@ class TestPythonFinder extends PythonFinder {
 describe('find-python', function () {
   it('find python', async function () {
     const found = await PythonFinder.findPython(null)
-    const { err, stdout, stderr } = await execFile(found, ['-V'], { encoding: 'utf-8' })
+    const { err, stdout, stderr } = await execFile(found, ['-V'], {
+      encoding: 'utf-8',
+    })
     assert.strictEqual(err, null)
     assert.ok(/Python 3/.test(stdout))
     assert.strictEqual(stderr, '')
@@ -41,7 +43,10 @@ describe('find-python', function () {
         assert.ok(/sys\.version_info/.test(args[1]))
         return { stdout: '3.9.1' }
       }
-      assert.strictEqual(program, process.platform === 'win32' ? '"python"' : 'python')
+      assert.strictEqual(
+        program,
+        process.platform === 'win32' ? '"python"' : 'python',
+      )
       assert.ok(/sys\.executable/.test(args[1]))
       return { stdout: '/path/python' }
     }
@@ -143,8 +148,10 @@ describe('find-python', function () {
       }
       if (/sys\.executable/.test(args[args.length - 1])) {
         throw new Error('not found')
-      } else if (program === expectedProgram &&
-                 /sys\.version_info/.test(args[args.length - 1])) {
+      } else if (
+        program === expectedProgram &&
+        /sys\.version_info/.test(args[args.length - 1])
+      ) {
         return { stdout: '3.7.3' }
       } else {
         assert.fail()

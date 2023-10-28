@@ -10,9 +10,11 @@ let calls = 0
 
 server.listen(port)
 
-function handler (req, res) {
+function handler(req, res) {
   if (req.url.indexOf(prefix) !== 0) {
-    throw new Error('request url [' + req.url + '] does not start with [' + prefix + ']')
+    throw new Error(
+      'request url [' + req.url + '] does not start with [' + prefix + ']',
+    )
   }
 
   const upstreamUrl = upstream + req.url.substring(prefix.length)
